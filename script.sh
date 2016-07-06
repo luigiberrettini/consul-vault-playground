@@ -1,5 +1,23 @@
 #!/bin/bash
 
+function destroyContainers()
+{
+    printf "***** Destroying containers\n"
+
+    local filterBy=$1
+
+    printf "List of all containers before destruction\n"
+    docker -H tcp://0.0.0.0:2375 ps -a
+
+    printf "Stopping and removing containers\n"
+    local toBeDestroyed=$(docker -H tcp://0.0.0.0:2375 ps -a | tail -n +2 | grep $filterBy | awk '{ print $1 }')
+    docker -H tcp://0.0.0.0:2375 stop $toBeDestroyed > /dev/null
+    docker -H tcp://0.0.0.0:2375 rm $toBeDestroyed > /dev/null
+
+    printf "List of all containers after destruction\n"
+    docker -H tcp://0.0.0.0:2375 ps -a
+}
+
 function startRedis()
 {
     printf "***** Starting Redis\n"
@@ -40,22 +58,6 @@ function pushItemsToRedis()
     docker -H tcp://0.0.0.0:2375 run -it --link feredissrv2:redis --rm redis redis-cli -h redis -p 6379 lpush myFeList2 FeL2First > /dev/null && \
     printf "Server feredissrv2 - Key myFeList2 items:\n" && \
     docker -H tcp://0.0.0.0:2375 run -it --link feredissrv2:redis --rm redis redis-cli -h redis -p 6379 lrange myFeList2 0 -1
-}
-
-function destroyConsul()
-{
-    printf "***** Destroying Consul containers\n"
-    
-    printf "List of all containers before destruction\n"
-    docker -H tcp://0.0.0.0:2375 ps -a
-
-    printf "Stopping and removing containers\n"
-    local toBeDestroyed=$(docker -H tcp://0.0.0.0:2375 ps -a | tail -n +2 | grep consul | awk '{ print $1 }')
-    docker -H tcp://0.0.0.0:2375 stop $toBeDestroyed > /dev/null
-    docker -H tcp://0.0.0.0:2375 rm $toBeDestroyed > /dev/null
-
-    printf "List of all containers after destruction\n"
-    docker -H tcp://0.0.0.0:2375 ps -a
 }
 
 function startConsulBootstrapAgents()
