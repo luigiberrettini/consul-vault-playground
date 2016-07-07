@@ -239,9 +239,9 @@ function _showPassingAndCriticalChecks()
     curl --silent 'http://localhost:8511/v1/health/state/critical' | jq
 }
 
-function showHealthInfo()
+function showNodeCheckServiceHealthInfo()
 {
-    printf "***** Showing health info\n"
+    printf "***** Showing nodes, check and service health info\n"
 
     printf "health/node/be5cli2\n"
     curl --silent 'http://localhost:8511/v1/health/node/be5cli2' | jq '.[] | select(.CheckID!="serfHealth")'
@@ -249,17 +249,22 @@ function showHealthInfo()
     curl --silent 'http://localhost:8511/v1/health/checks/be-redis' | jq
     printf "health/service/be-redis (service name instead of ID)\n"
     curl --silent 'http://localhost:8511/v1/health/service/be-redis' | jq
+}
+
+function showCheckStateHealthInfo()
+{
+    printf "***** Showing check state health info\n"
 
     _showPassingAndCriticalChecks
 
     printf "Stopping beredissrv2 and waiting before showing check status (look also at Web UIs)\n"
     docker -H tcp://0.0.0.0:2375 stop beredissrv2
-    sleep 10
+    sleep 15
     _showPassingAndCriticalChecks
 
     printf "Starting beredissrv2 and waiting before showing check status (look also at Web UIs)\n"
     docker -H tcp://0.0.0.0:2375 start beredissrv2
-    sleep 10
+    sleep 15
     _showPassingAndCriticalChecks
 }
 
