@@ -277,13 +277,13 @@ function queryDns()
     printf "catalog/services\n"
     curl --silent 'http://localhost:8515/v1/catalog/services' | jq
 
-    printf "All be-redis services: dig @127.0.0.1 -p 8611 be-redis.service.consul\n"
+    printf "\n\n\n\n\nAll be-redis services\n"
     dig @127.0.0.1 -p 8611 be-redis.service.consul
     
-    printf "Filter services by tag: dig @127.0.0.1 -p 8611 official.be-redis.service.consul\n"
+    printf "\n\n\n\n\nFilter services by tag\n"
     dig @127.0.0.1 -p 8611 official.be-redis.service.consul
 
-    printf "Detailed service info: dig @127.0.0.1 -p 8611 official.be-redis.service.consul SRV\n"
+    printf "\n\n\n\n\nDetailed service info\n"
     dig @127.0.0.1 -p 8611 official.be-redis.service.consul SRV
 }
 
