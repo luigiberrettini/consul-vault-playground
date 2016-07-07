@@ -192,12 +192,14 @@ function addAgentServiceAndCheckSeparately()
 {
     printf "***** Adding agent service and check separately\n"
 
+    local beredissrv1Ip="$(docker -H tcp://0.0.0.0:2375 inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv1)"
+
     curl --silent -X PUT --data '{ "ID": "berdssrv1", "Name": "be-redis", "Tags": [ "official", "nosql" ], "Address": "'$beredissrv1Ip'", "Port": 6379 }' 'http://localhost:8514/v1/agent/service/register'
-    printf "Added service with ID berdssrv1 and name be-redis\n"
+    printf "Added service { ID: \"berdssrv1\", Name: \"be-redis\" }\n"
     _showAgentServicesAndChecks 8514
 
     curl --silent -X PUT --data '{ "ServiceID": "berdssrv1", "ID": "beredissrv1UpAndRunning", "Name": "BE Redis 1 up and running", "TCP": "'$beredissrv1Ip':6379", "interval": "20s", "timeout": "2s" }' 'http://localhost:8514/v1/agent/check/register'
-    printf "Added check for service berdssrv1 with ID beredissrv1UpAndRunning and name BE Redis 1 up and running\n"
+    printf "Added check for service with ID berdssrv1 { ID: \"beredissrv1UpAndRunning\", Name: \"BE Redis 1 up and running\" }\n"
     _showAgentServicesAndChecks 8514
 }
 
@@ -205,15 +207,17 @@ function addAgentServiceAndCheckAtOnce()
 {
     printf "***** Adding agent service and check at once\n"
 
+    local beredissrv2Ip="$(docker -H tcp://0.0.0.0:2375 inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv2)"
+
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "$beredissrv2Ip", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
-    printf "Added service with ID berdssrv2 and name be-redis\n"
+    printf "Added service { ID: \"berdssrv2\", Name: \"be-redis\" } and check { ID: \"service:berdssrv2\", Name: \"Service 'be-redis' check\" }\n"
     _showAgentServicesAndChecks 8515
 
     _removeAgentService 8515 'berdssrv2'
     _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "5s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
-    printf "Readded service with ID berdssrv2 and name be-redis\n"
+    printf "Readded service { ID: \"berdssrv2\", Name: \"be-redis\" } and check { ID: \"service:berdssrv2\", Name: \"Service 'be-redis' check\" }\n"
     _showAgentServicesAndChecks 8515
 
     _removeAgentCheck 8515 'service:berdssrv2'
@@ -223,7 +227,7 @@ function addAgentServiceAndCheckAtOnce()
     _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
-    printf "Restored service with ID berdssrv2 and name be-redis\n"
+    printf "Restored service { ID: \"berdssrv2\", Name: \"be-redis\" } and check { ID: \"service:berdssrv2\", Name: \"Service 'be-redis' check\" }\n"
 }
 
 function _showPassingAndCriticalChecks()
@@ -241,9 +245,9 @@ function showHealthInfo()
 
     printf "health/node/be5cli2\n"
     curl --silent 'http://localhost:8511/v1/health/node/be5cli2' | jq '.[] | select(.CheckID!="serfHealth")'
-    printf "health/checks/be-redis\n"
+    printf "health/checks/be-redis (service name instead of ID)\n"
     curl --silent 'http://localhost:8511/v1/health/checks/be-redis' | jq
-    printf "health/service/be-redis\n"
+    printf "health/service/be-redis (service name instead of ID)\n"
     curl --silent 'http://localhost:8511/v1/health/service/be-redis' | jq
 
     _showPassingAndCriticalChecks
