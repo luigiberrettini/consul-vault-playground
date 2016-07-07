@@ -95,12 +95,12 @@ function startConsulNonBootstrapAgents()
     docker -H tcp://0.0.0.0:2375 run -d -p 8412:8400 -p 8512:8500 -p 8612:8600/udp --name be2srv2 -h be2srv2 gliderlabs/consul-server -dc "backenddc" -join $beJoinIp -join-wan $beJoinIp && printf "Started be2srv2\n"
     docker -H tcp://0.0.0.0:2375 run -d -p 8413:8400 -p 8513:8500 -p 8613:8600/udp --name be3srv3 -h be3srv3 gliderlabs/consul-server -dc "backenddc" -join $beJoinIp -join-wan $beJoinIp && printf "Started be3srv3\n"
     docker -H tcp://0.0.0.0:2375 run -d -p 8414:8400 -p 8514:8500 -p 8614:8600/udp --name be4cli1 -h be4cli1 gliderlabs/consul-agent -dc "backenddc" -join $beJoinIp && printf "Started be4cli1\n"
-    docker -H tcp://0.0.0.0:2375 run -d -p 8415:8400 -p 8515:8500 -p 8615:8600/udp --name be5cli2 -h be5cli2 gliderlabs/consul-agent -dc "backenddc" -join $beJoinIp && printf "Started be4cli2\n"
+    docker -H tcp://0.0.0.0:2375 run -d -p 8415:8400 -p 8515:8500 -p 8615:8600/udp --name be5cli2 -h be5cli2 gliderlabs/consul-agent -dc "backenddc" -join $beJoinIp && printf "Started be5cli2\n"
 
     local feJoinIp="$(docker -H tcp://0.0.0.0:2375 inspect -f '{{.NetworkSettings.IPAddress}}' fe1srv1)"
     
-    docker -H tcp://0.0.0.0:2375 run -d -p 8422:8400 -p 8522:8500 -p 8622:8600/udp --name fe2srv2 -h fe2srv2 gliderlabs/consul-server -server -dc "frontenddc" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe2srv2\n"
-    docker -H tcp://0.0.0.0:2375 run -d -p 8423:8400 -p 8523:8500 -p 8623:8600/udp --name fe3srv3 -h fe3srv3 gliderlabs/consul-server -server -dc "frontenddc" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe3srv3\n"
+    docker -H tcp://0.0.0.0:2375 run -d -p 8422:8400 -p 8522:8500 -p 8622:8600/udp --name fe2srv2 -h fe2srv2 gliderlabs/consul-server -dc "frontenddc" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe2srv2\n"
+    docker -H tcp://0.0.0.0:2375 run -d -p 8423:8400 -p 8523:8500 -p 8623:8600/udp --name fe3srv3 -h fe3srv3 gliderlabs/consul-server -dc "frontenddc" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe3srv3\n"
     docker -H tcp://0.0.0.0:2375 run -d -p 8424:8400 -p 8524:8500 -p 8624:8600/udp --name fe4cli1 -h fe4cli1 gliderlabs/consul-agent -dc "frontenddc" -join $feJoinIp && printf "Started fe4cli1\n"
     docker -H tcp://0.0.0.0:2375 run -d -p 8425:8400 -p 8525:8500 -p 8625:8600/udp --name fe5cli2 -h fe5cli2 gliderlabs/consul-agent -dc "frontenddc" -join $feJoinIp && printf "Started fe5cli2\n"
 }
