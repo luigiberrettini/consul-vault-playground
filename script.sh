@@ -168,6 +168,26 @@ function _showAgentServicesAndChecks()
     curl --silent "http://localhost:$port/v1/agent/checks" | jq
 }
 
+function _removeAgentService()
+{
+    # 8515
+    local port=$1
+    local serviceId=$2
+
+    curl --silent "http://localhost:$port/v1/agent/service/deregister/$serviceId"
+    printf "Removed service with ID $serviceId\n"
+}
+
+function _removeAgentCheck()
+{
+    # 8515
+    local port=$1
+    local checkId=$2
+
+    curl --silent "http://localhost:$port/v1/agent/check/deregister/$checkId"
+    printf "Removed check with ID $checkId\n"
+}
+
 function addAgentServiceAndCheckSeparately()
 {
     printf "***** Adding agent service and check separately\n"
@@ -189,20 +209,17 @@ function addAgentServiceAndCheckAtOnce()
     printf "Added service with ID berdssrv2 and name be-redis\n"
     _showAgentServicesAndChecks 8515
 
-    curl --silent 'http://localhost:8515/v1/agent/service/deregister/berdssrv2'
-    printf "Removed service with ID berdssrv2\n"
+    _removeAgentService 8515 'berdssrv2'
     _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "5s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
     printf "Readded service with ID berdssrv2 and name be-redis\n"
     _showAgentServicesAndChecks 8515
 
-    curl --silent 'http://localhost:8515/v1/agent/check/deregister/service:berdssrv2'
-    printf "Removed check with ID service:berdssrv2\n"
+    _removeAgentCheck 8515 'service:berdssrv2'
     _showAgentServicesAndChecks 8515
 
-    curl --silent 'http://localhost:8515/v1/agent/service/deregister/berdssrv2'
-    printf "Removed service with ID berdssrv2\n"
+    _removeAgentService 8515 'berdssrv2'
     _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
