@@ -109,12 +109,13 @@ function joinDatacenters()
 {
     printf "***** Joining data centers\n"
 
-    printf "Data centers before join (look also at Web UIs):\n$(curl --silent 'http://localhost:8515/v1/catalog/datacenters')"
+    printf "Data centers before join (look also at Web UIs):\n$(curl --silent 'http://localhost:8515/v1/catalog/datacenters')\n"
     
     local beJoinIp="$(docker -H tcp://0.0.0.0:2375 inspect -f '{{.NetworkSettings.IPAddress}}' be1srv1)"
     docker -H tcp://0.0.0.0:2375 exec fe1srv1 /bin/consul join -wan $beJoinIp
+    sleep 5
 
-    printf "Data centers after join (look also at Web UIs):\n$(curl --silent 'http://localhost:8515/v1/catalog/datacenters')"
+    printf "Data centers after join (look also at Web UIs):\n$(curl --silent 'http://localhost:8515/v1/catalog/datacenters')\n"
 }
 
 function showCatalogInfo()
@@ -157,7 +158,7 @@ function showAgentConfiguration()
     curl --silent "http://localhost:$port/v1/agent/self" | jq
 }
 
-function showAgentServicesAndChecks()
+function _showAgentServicesAndChecks()
 {
     local port=$1
     
@@ -173,11 +174,11 @@ function addAgentServiceAndCheckSeparately()
 
     curl --silent -X PUT --data '{ "ID": "berdssrv1", "Name": "be-redis", "Tags": [ "official", "nosql" ], "Address": "'$beredissrv1Ip'", "Port": 6379 }' 'http://localhost:8514/v1/agent/service/register'
     printf "Added service with ID berdssrv1 and name be-redis\n"
-    showAgentServicesAndChecks 8514
+    _showAgentServicesAndChecks 8514
 
     curl --silent -X PUT --data '{ "ServiceID": "berdssrv1", "ID": "beredissrv1UpAndRunning", "Name": "BE Redis 1 up and running", "TCP": "'$beredissrv1Ip':6379", "interval": "20s", "timeout": "2s" }' 'http://localhost:8514/v1/agent/check/register'
     printf "Added check for service berdssrv1 with ID beredissrv1UpAndRunning and name BE Redis 1 up and running\n"
-    showAgentServicesAndChecks 8514
+    _showAgentServicesAndChecks 8514
 }
 
 function addAgentServiceAndCheckAtOnce()
@@ -186,29 +187,29 @@ function addAgentServiceAndCheckAtOnce()
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "$beredissrv2Ip", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
     printf "Added service with ID berdssrv2 and name be-redis\n"
-    showAgentServicesAndChecks 8515
+    _showAgentServicesAndChecks 8515
 
     curl --silent 'http://localhost:8515/v1/agent/service/deregister/berdssrv2'
     printf "Removed service with ID berdssrv2\n"
-    showAgentServicesAndChecks 8515
+    _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "5s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
     printf "Readded service with ID berdssrv2 and name be-redis\n"
-    showAgentServicesAndChecks 8515
+    _showAgentServicesAndChecks 8515
 
     curl --silent 'http://localhost:8515/v1/agent/check/deregister/service:berdssrv2'
     printf "Removed check with ID service:berdssrv2\n"
-    showAgentServicesAndChecks 8515
+    _showAgentServicesAndChecks 8515
 
     curl --silent 'http://localhost:8515/v1/agent/service/deregister/berdssrv2'
     printf "Removed service with ID berdssrv2\n"
-    showAgentServicesAndChecks 8515
+    _showAgentServicesAndChecks 8515
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "'$beredissrv2Ip'", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
     printf "Restored service with ID berdssrv2 and name be-redis\n"
 }
 
-function showPassingAndCriticalChecks()
+function _showPassingAndCriticalChecks()
 {
     printf "health/state/passing\n"
     curl --silent 'http://localhost:8511/v1/health/state/passing' | jq '.[] | select(.CheckID!="serfHealth")'
@@ -217,7 +218,7 @@ function showPassingAndCriticalChecks()
     curl --silent 'http://localhost:8511/v1/health/state/critical' | jq
 }
 
-function ShowHealthInfo()
+function showHealthInfo()
 {
     printf "***** Showing health info\n"
 
@@ -228,20 +229,20 @@ function ShowHealthInfo()
     printf "health/service/be-redis\n"
     curl --silent 'http://localhost:8511/v1/health/service/be-redis' | jq
 
-    showPassingAndCriticalChecks
+    _showPassingAndCriticalChecks
 
     printf "Stopping beredissrv2 and waiting before showing check status (look also at Web UIs)\n"
     docker -H tcp://0.0.0.0:2375 stop beredissrv2
     sleep 10
-    showPassingAndCriticalChecks
+    _showPassingAndCriticalChecks
 
     printf "Starting beredissrv2 and waiting before showing check status (look also at Web UIs)\n"
     docker -H tcp://0.0.0.0:2375 start beredissrv2
     sleep 10
-    showPassingAndCriticalChecks
+    _showPassingAndCriticalChecks
 }
 
-function QueryDns()
+function queryDns()
 {
     printf "***** Querying DNS\n"
 
@@ -260,7 +261,7 @@ function QueryDns()
     dig @127.0.0.1 -p 8611 official.be-redis.service.consul SRV
 }
 
-function ManipulateKeyValueEntries()
+function manipulateKeyValueEntries()
 {
     printf "***** Manipulating key value entries\n"
 
@@ -288,7 +289,7 @@ function ManipulateKeyValueEntries()
     encodedkv=$(curl --silent 'http://localhost:8515/v1/kv/?recurse') && decodedkv=$encodedkv && while read encoded; do decoded=$(printf $encoded | base64 -di); decodedkv=$(printf $decodedkv | sed "s@$encoded@$decoded@"g); done< <(printf $encodedkv | jq '.[] | .Value' | sed 's@"@@'g) && printf $decodedkv | jq
 }
 
-function showLeaderAndPeers()
+function _showLeaderAndPeers()
 {
     printf "status/leader\n"
     echo "$(curl --silent 'http://localhost:8515/v1/status/leader')"
@@ -297,17 +298,17 @@ function showLeaderAndPeers()
     echo "$(curl --silent 'http://localhost:8515/v1/status/peers')"
 }
 
-function ShowStatusInfo()
+function showStatusInfo()
 {
     printf "***** Showing status info\n"
 
-    showLeaderAndPeers
+    _showLeaderAndPeers
 
     printf "Sending SIGINT to be2srv2 (look at the monitor window)\n"
     docker -H tcp://0.0.0.0:2375 exec be2srv2 kill -INT 1
-    showLeaderAndPeers
+    _showLeaderAndPeers
 
     printf "Turning be2srv2 back on (look at the monitor window)\n"
     docker -H tcp://0.0.0.0:2375 start be2srv2
-    showLeaderAndPeers
+    _showLeaderAndPeers
 }
