@@ -4,13 +4,13 @@ function destroyContainers()
 {
     printf "***** Destroying containers\n"
 
-    local filterBy=$1
+    local imageNameFilter=$1
 
     printf "List of all containers before destruction\n"
     docker -H tcp://0.0.0.0:2375 ps -a
 
     printf "Stopping and removing containers\n"
-    local toBeDestroyed=$(docker -H tcp://0.0.0.0:2375 ps -a | tail -n +2 | grep $filterBy | awk '{ print $1 }')
+    local toBeDestroyed=$(docker -H tcp://0.0.0.0:2375 ps -a | tail -n +2 | grep $imageNameFilter | awk '{ print $1 }')
     docker -H tcp://0.0.0.0:2375 stop $toBeDestroyed > /dev/null
     docker -H tcp://0.0.0.0:2375 rm $toBeDestroyed > /dev/null
 
