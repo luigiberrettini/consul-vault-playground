@@ -294,25 +294,28 @@ function manipulateKeyValueEntries()
     printf "kv/?recurse\n"
     curl --silent 'http://localhost:8515/v1/kv/?recurse'
 
-    printf "Putting and retrieving kv/category/application/sampleKey with value ABC\n"
+    printf "Putting kv/category/application/sampleKey with value ABC\n"
     echo "$(curl --silent -X PUT --data 'ABC' 'http://localhost:8515/v1/kv/category/application/sampleKey')"
+    printf "Retrieving kv/category/application/sampleKey\n"
     curl --silent 'http://localhost:8515/v1/kv/category/application/sampleKey' | jq
 
-    printf "Deleting and retrieving kv/category/application/sampleKey\n"
-    curl --silent -X DELETE 'http://localhost:8515/v1/kv/category/application/sampleKey' | jq
+    printf "\n\nDeleting kv/category/application/sampleKey\n"
+    echo "$(curl --silent -X DELETE 'http://localhost:8515/v1/kv/category/application/sampleKey')"
+    printf "Retrieving kv/category/application/sampleKey\n"
     curl --silent 'http://localhost:8515/v1/kv/category/application/sampleKey' | jq
 
-    printf "Putting and retrieving kv/category/application/retryInterval\n"
+    printf "\n\nPutting kv/category/application/retryInterval\n"
     echo "$(curl --silent -X PUT --data '5000' 'http://localhost:8515/v1/kv/category/application/retryInterval')"
-
-    printf "Putting and retrieving kv/category/application/dbHost\n"
+    printf "Putting kv/category/application/dbHost\n"
     echo "$(curl --silent -X PUT --data 'ìù@gò' 'http://localhost:8515/v1/kv/category/application/dbHost')"
-
     printf "Deleting kv/category/application\n"
     echo "$(curl --silent -X DELETE 'http://localhost:8515/v1/kv/category/application')"
 
     printf "Retrieving all keys with decoded values (look also at Web UIs)\n"
-    encodedkv=$(curl --silent 'http://localhost:8515/v1/kv/?recurse') && decodedkv=$encodedkv && while read encoded; do decoded=$(printf $encoded | base64 -di); decodedkv=$(printf $decodedkv | sed "s@$encoded@$decoded@"g); done< <(printf $encodedkv | jq '.[] | .Value' | sed 's@"@@'g) && printf $decodedkv | jq
+    encodedkv=$(curl --silent 'http://localhost:8515/v1/kv/?recurse') && \
+    decodedkv=$encodedkv && \
+    while read encoded; do decoded=$(printf "$encoded" | base64 -di); decodedkv=${decodedkv//$encoded/$decoded}; done < <(printf $encodedkv | jq '.[] | .Value' | sed 's@"@@'g) && \
+    printf $decodedkv | jq
 }
 
 function _showLeaderAndPeers()
