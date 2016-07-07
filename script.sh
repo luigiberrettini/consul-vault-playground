@@ -283,7 +283,16 @@ function queryDns()
     printf "\n\n\n\n\nFilter services by tag\n"
     dig @127.0.0.1 -p 8611 official.be-redis.service.consul
 
-    printf "\n\n\n\n\nDetailed service info\n"
+    printf "\n\n\n\n\nStopping beredissrv1\n"
+    docker -H tcp://0.0.0.0:2375 stop beredissrv1 > /dev/null
+    sleep 20
+    printf "Detailed service info: DNS resolution is disabled\n"
+    dig @127.0.0.1 -p 8611 official.be-redis.service.consul SRV
+
+    printf "\n\n\n\n\nStarting beredissrv1\n"
+    docker -H tcp://0.0.0.0:2375 start beredissrv1 > /dev/null
+    sleep 20
+    printf "Detailed service info: DNS resolution is enabled\n"
     dig @127.0.0.1 -p 8611 official.be-redis.service.consul SRV
 }
 
