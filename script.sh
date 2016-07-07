@@ -335,9 +335,11 @@ function showStatusInfo()
 
     printf "Sending SIGINT to be2srv2 (look at the monitor window)\n"
     docker -H tcp://0.0.0.0:2375 exec be2srv2 kill -INT 1
+    sleep 15
     _showLeaderAndPeers
 
     printf "Turning be2srv2 back on (look at the monitor window)\n"
     docker -H tcp://0.0.0.0:2375 start be2srv2
+    sleep 15
     _showLeaderAndPeers
 }
