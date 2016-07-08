@@ -68,10 +68,10 @@ function startConsulBootstrapAgents()
 
     local ip=$1
 
-    docker run -d -p 8411:8400 -p 8511:8500 -p 8611:8600/udp --name be1srv1 -h be1srv1 gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
+    docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp --name be1srv1 -h be1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
     printf "BE Web UI URL is http://$ip:8511/ui\n"
     
-    docker run -d -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name fe1srv1 -h fe1srv1 gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend"
+    docker run -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name fe1srv1 -h fe1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend"
     printf "FE Web UI URL is http://$ip:8521/ui\n"
 }
 
