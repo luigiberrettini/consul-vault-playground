@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export DOCKER_HOST=tcp://0.0.0.0:2375
-
 function cloneDockerConsulTemplate()
 {
     printf "***** Cloning Docker consul-template repo\n"
