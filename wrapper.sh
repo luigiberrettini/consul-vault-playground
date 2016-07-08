@@ -22,3 +22,4 @@ function destroyContainers()
 
 source ./basic-features.sh
 source ./consul-template.sh
+source ./vault.sh
