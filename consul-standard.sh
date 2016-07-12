@@ -7,6 +7,8 @@ function _dockerBridgeIp()
 
 function addConsulDnsDockerOpts()
 {
+    printf "***** Adding Consul DNS DOCKER_OPTS if needed\n"
+
     local toBeAppended="DOCKER_OPTS='--dns $(_dockerBridgeIp) --dns 8.8.8.8 --dns-search service.consul dns-search node.consul'"
 
     if [ ! -f /etc/default/docker ] || [ "$(grep -c DOCKER_OPTS /etc/default/docker)" -eq "0" ]; then
@@ -19,21 +21,12 @@ function startRedis()
 {
     printf "***** Starting Redis\n"
 
-    docker run --name beredissrv1 -d redis
-    local beredissrv1Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv1)"
-    printf "Started beredissrv1 with IP $beredissrv1Ip\n"
+    local container=''
 
-    docker run --name beredissrv2 -d redis
-    local beredissrv2Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv2)"
-    printf "Started beredissrv2 with IP $beredissrv2Ip\n"
-
-    docker run --name feredissrv1 -d redis
-    local feredissrv1Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' feredissrv1)"
-    printf "Started feredissrv1 with IP $feredissrv1Ip\n"
-
-    docker run --name feredissrv2 -d redis
-    local feredissrv2Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' feredissrv2)"
-    printf "Started feredissrv2 with IP $feredissrv2Ip\n"    
+    container='beredissrv1' && docker run --name $container -d redis && _printContainerNameAndIp $container
+    container='beredissrv2' && docker run --name $container -d redis && _printContainerNameAndIp $container
+    container='feredissrv1' && docker run --name $container -d redis && _printContainerNameAndIp $container
+    container='feredissrv2' && docker run --name $container -d redis && _printContainerNameAndIp $container
 }
 
 function pushItemsToRedis()
@@ -45,15 +38,15 @@ function pushItemsToRedis()
     docker run -it --link beredissrv1:redis --rm redis redis-cli -h redis -p 6379 lrange myBeList1 0 -1
 
     docker run -it --link beredissrv2:redis --rm redis redis-cli -h redis -p 6379 lpush myBeList2 BeL2First > /dev/null && \
-    printf "Server beredissrv2 - Key myBeList2 items:\n" && \
+    printf "\nServer beredissrv2 - Key myBeList2 items:\n" && \
     docker run -it --link beredissrv1:redis --rm redis redis-cli -h redis -p 6379 lrange myBeList2 0 -1
 
     docker run -it --link feredissrv1:redis --rm redis redis-cli -h redis -p 6379 lpush myFeList1 FeL1First > /dev/null && \
-    printf "Server feredissrv1 - Key myFeList1 items:\n" && \
+    printf "\nServer feredissrv1 - Key myFeList1 items:\n" && \
     docker run -it --link feredissrv1:redis --rm redis redis-cli -h redis -p 6379 lrange myFeList1 0 -1
 
     docker run -it --link feredissrv2:redis --rm redis redis-cli -h redis -p 6379 lpush myFeList2 FeL2First > /dev/null && \
-    printf "Server feredissrv2 - Key myFeList2 items:\n" && \
+    printf "\nServer feredissrv2 - Key myFeList2 items:\n" && \
     docker run -it --link feredissrv2:redis --rm redis redis-cli -h redis -p 6379 lrange myFeList2 0 -1
 }
 
@@ -61,14 +54,11 @@ function startConsulBootstrapAgents()
 {
     printf "***** Starting consul bootsrap agents\n"
 
-    local hostIp=$1
-    local dockerBridgeIp=$(_dockerBridgeIp)
+    local agent=''
 
-    docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp -p $dockerBridgeIp:53:8600/udp --name be1srv1 -h be1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
-    printf "BE Web UI URL is http://$hostIp:8511/ui\n"
-    
-    docker run -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name fe1srv1 -h fe1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend"
-    printf "FE Web UI URL is http://$hostIp:8521/ui\n"
+    agent='be1srv1' && docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp -p $(_dockerBridgeIp):53:8600/udp --name $agent -h $agent -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend" && _printContainerNameAndIp $agent
+    agent='fe1srv1' && docker run -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name $agent -h $agent -d gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend" && _printContainerNameAndIp $agent
+    printf "BE Web UI URL is http://hostIp:8511/ui and FE Web UI URL is http://hostIp:8521/ui\n"
 }
 
 function startConsulMonitor()
@@ -88,19 +78,21 @@ function startConsulNonBootstrapAgents()
 {
     printf "***** Starting consul non bootsrap agents\n"
 
-    local beJoinIp="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' be1srv1)"
+    local agent=''
 
-    docker run -d -p 8412:8400 -p 8512:8500 -p 8612:8600/udp --name be2srv2 -h be2srv2 gliderlabs/consul-server -dc "backend" -join $beJoinIp -join-wan $beJoinIp && printf "Started be2srv2\n"
-    docker run -d -p 8413:8400 -p 8513:8500 -p 8613:8600/udp --name be3srv3 -h be3srv3 gliderlabs/consul-server -dc "backend" -join $beJoinIp -join-wan $beJoinIp && printf "Started be3srv3\n"
-    docker run -d -p 8414:8400 -p 8514:8500 -p 8614:8600/udp --name be4cli1 -h be4cli1 gliderlabs/consul-agent -dc "backend" -join $beJoinIp && printf "Started be4cli1\n"
-    docker run -d -p 8415:8400 -p 8515:8500 -p 8615:8600/udp --name be5cli2 -h be5cli2 gliderlabs/consul-agent -dc "backend" -join $beJoinIp && printf "Started be5cli2\n"
+    local beJoinIp="$(_containerIp be1srv1)"
 
-    local feJoinIp="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' fe1srv1)"
+    agent='be2srv2' && docker run -d -p 8412:8400 -p 8512:8500 -p 8612:8600/udp --name $agent -h $agent gliderlabs/consul-server -dc "backend" -join $beJoinIp -join-wan $beJoinIp && _printContainerNameAndIp $agent
+    agent='be3srv3' && docker run -d -p 8413:8400 -p 8513:8500 -p 8613:8600/udp --name $agent -h $agent gliderlabs/consul-server -dc "backend" -join $beJoinIp -join-wan $beJoinIp && _printContainerNameAndIp $agent
+    agent='be4cli1' && docker run -d -p 8414:8400 -p 8514:8500 -p 8614:8600/udp --name $agent -h $agent gliderlabs/consul-agent -dc "backend" -join $beJoinIp && _printContainerNameAndIp $agent
+    agent='be5cli2' && docker run -d -p 8415:8400 -p 8515:8500 -p 8615:8600/udp --name $agent -h $agent gliderlabs/consul-agent -dc "backend" -join $beJoinIp && _printContainerNameAndIp $agent
+
+    local feJoinIp="$(_containerIp fe1srv1)"
     
-    docker run -d -p 8422:8400 -p 8522:8500 -p 8622:8600/udp --name fe2srv2 -h fe2srv2 gliderlabs/consul-server -dc "frontend" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe2srv2\n"
-    docker run -d -p 8423:8400 -p 8523:8500 -p 8623:8600/udp --name fe3srv3 -h fe3srv3 gliderlabs/consul-server -dc "frontend" -join $feJoinIp -join-wan $feJoinIp && printf "Started fe3srv3\n"
-    docker run -d -p 8424:8400 -p 8524:8500 -p 8624:8600/udp --name fe4cli1 -h fe4cli1 gliderlabs/consul-agent -dc "frontend" -join $feJoinIp && printf "Started fe4cli1\n"
-    docker run -d -p 8425:8400 -p 8525:8500 -p 8625:8600/udp --name fe5cli2 -h fe5cli2 gliderlabs/consul-agent -dc "frontend" -join $feJoinIp && printf "Started fe5cli2\n"
+    agent='fe2srv2' && docker run -d -p 8422:8400 -p 8522:8500 -p 8622:8600/udp --name $agent -h $agent gliderlabs/consul-server -dc "frontend" -join $feJoinIp -join-wan $feJoinIp && _printContainerNameAndIp $agent
+    agent='fe3srv3' && docker run -d -p 8423:8400 -p 8523:8500 -p 8623:8600/udp --name $agent -h $agent gliderlabs/consul-server -dc "frontend" -join $feJoinIp -join-wan $feJoinIp && _printContainerNameAndIp $agent
+    agent='fe4cli1' && docker run -d -p 8424:8400 -p 8524:8500 -p 8624:8600/udp --name $agent -h $agent gliderlabs/consul-agent -dc "frontend" -join $feJoinIp && _printContainerNameAndIp $agent
+    agent='fe5cli2' && docker run -d -p 8425:8400 -p 8525:8500 -p 8625:8600/udp --name $agent -h $agent gliderlabs/consul-agent -dc "frontend" -join $feJoinIp && _printContainerNameAndIp $agent
 }
 
 function joinDatacenters()
@@ -109,7 +101,7 @@ function joinDatacenters()
 
     printf "Data centers before join (look also at Web UIs):\n$(curl --silent 'http://localhost:8515/v1/catalog/datacenters')\n"
     
-    local beJoinIp="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' be1srv1)"
+    local beJoinIp="$(_containerIp be1srv1)"
     docker exec fe1srv1 /bin/consul join -wan $beJoinIp
     sleep 5
 
@@ -190,7 +182,7 @@ function addAgentServiceAndCheckSeparately()
 {
     printf "***** Adding agent service and check separately\n"
 
-    local beredissrv1Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv1)"
+    local beredissrv1Ip="$(_containerIp beredissrv1)"
 
     curl --silent -X PUT --data '{ "ID": "berdssrv1", "Name": "be-redis", "Tags": [ "official", "nosql" ], "Address": "'$beredissrv1Ip'", "Port": 6379 }' 'http://localhost:8514/v1/agent/service/register'
     printf "Added service { ID: \"berdssrv1\", Name: \"be-redis\" }\n"
@@ -205,7 +197,7 @@ function addAgentServiceAndCheckAtOnce()
 {
     printf "***** Adding agent service and check at once\n"
 
-    local beredissrv2Ip="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' beredissrv2)"
+    local beredissrv2Ip="$(_containerIp beredissrv2)"
 
     curl --silent -X PUT --data '{ "ID": "berdssrv2", "Name": "be-redis", "Tags": [ "backup", "nosql" ], "Address": "$beredissrv2Ip", "Port": 6379, "Check": { "ID": "beredissrv2UpAndRunning", "Name": "BE Redis 2 up and running", "TCP": "'$beredissrv2Ip':6379", "interval": "15s", "timeout": "2s" } }' 'http://localhost:8515/v1/agent/service/register'
     printf "Added service { ID: \"berdssrv2\", Name: \"be-redis\" } and check { ID: \"service:berdssrv2\", Name: \"Service 'be-redis' check\" }\n"

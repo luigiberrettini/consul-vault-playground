@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export DOCKER_HOST=tcp://0.0.0.0:2375
-export VAULT_SERVER_CONTAINER_NAME=vaultd
-#export VAULT_SERVER_CONTAINER_NAME=vaultsd
-#export VAULT_SERVER_CONTAINER_NAME=vaultso
+export VAULT_SERVER_CONTAINER_NAME='vaultdi'
+#export VAULT_SERVER_CONTAINER_NAME='vaultsf'
+#export VAULT_SERVER_CONTAINER_NAME='vaultsc'
 
 function destroyContainers()
 {
@@ -21,6 +21,24 @@ function destroyContainers()
 
     printf "List of all containers after destruction\n"
     docker ps -a
+}
+
+function _containerIp()
+{
+    local containerName=$1
+    docker inspect -f '{{.NetworkSettings.IPAddress}}' $containerName
+}
+
+function _printContainerNameAndIp()
+{
+    local containerName=$1
+    printf "$containerName IP: $(_containerIp $containerName)\n\n"
+}
+
+function _printLogs()
+{
+    local containerName=$1
+    docker logs $containerName 2>&1
 }
 
 source ./consul-standard.sh
