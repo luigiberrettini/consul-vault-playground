@@ -1,5 +1,20 @@
 #!/bin/bash
 
+function _dockerBridgeIp()
+{
+    ifconfig docker0 | grep inet | head -n 1 | awk '{print $2}'
+}
+
+function addConsulDnsDockerOpts()
+{
+    local toBeAppended="DOCKER_OPTS='--dns $(_dockerBridgeIp) --dns 8.8.8.8 --dns-search service.consul dns-search node.consul'"
+
+    if [ ! -f /etc/default/docker ] || [ "$(grep -c DOCKER_OPTS /etc/default/docker)" -eq "0" ]; then
+        echo $toBeAppended | sudo tee --append /etc/default/docker > /dev/null
+        sudo service docker restart
+    fi
+}
+
 function startRedis()
 {
     printf "***** Starting Redis\n"
@@ -47,7 +62,7 @@ function startConsulBootstrapAgents()
     printf "***** Starting consul bootsrap agents\n"
 
     local hostIp=$1
-    local dockerBridgeIp=$(ifconfig docker0 | grep inet | head -n 1 | awk '{print $2}')
+    local dockerBridgeIp=$(_dockerBridgeIp)
 
     docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp -p $dockerBridgeIp:53:8600/udp --name be1srv1 -h be1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
     printf "BE Web UI URL is http://$hostIp:8511/ui\n"
