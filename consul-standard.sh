@@ -46,13 +46,14 @@ function startConsulBootstrapAgents()
 {
     printf "***** Starting consul bootsrap agents\n"
 
-    local ip=$1
+    local hostIp=$1
+    local dockerBridgeIp=$(ifconfig docker0 | grep inet | head -n 1 | awk '{print $2}')
 
-    docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp --name be1srv1 -h be1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
-    printf "BE Web UI URL is http://$ip:8511/ui\n"
+    docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp -p $dockerBridgeIp:53:8600/udp --name be1srv1 -h be1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend"
+    printf "BE Web UI URL is http://$hostIp:8511/ui\n"
     
     docker run -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name fe1srv1 -h fe1srv1 -d gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend"
-    printf "FE Web UI URL is http://$ip:8521/ui\n"
+    printf "FE Web UI URL is http://$hostIp:8521/ui\n"
 }
 
 function startConsulMonitor()
