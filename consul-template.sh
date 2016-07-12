@@ -25,7 +25,7 @@ function startTemplateRenderer()
     docker rm $toBeDestroyed > /dev/null 2>&1
 
     printf "Running consultmpl8 to render $templateName to $outputName\n"
-    docker run --link $containerName:consul -v $templateFolder:/work -d consultmpl8 consul-template -consul consul:8500 -template "/work/$templateName:/work/$outputName"
+    docker run --link $containerName:consul -v $templateFolder:/work --name csltmpl -h csltmpl -d consultmpl8 consul-template -consul consul:8500 -template "/work/$templateName:/work/$outputName"
     cat /work/$templateName
     cat /work/$outputName
 }

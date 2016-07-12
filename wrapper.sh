@@ -1,6 +1,9 @@
 #!/bin/bash
 
 export DOCKER_HOST=tcp://0.0.0.0:2375
+export VAULT_SERVER_CONTAINER_NAME=vaultd
+#export VAULT_SERVER_CONTAINER_NAME=vaultsd
+#export VAULT_SERVER_CONTAINER_NAME=vaultso
 
 function destroyContainers()
 {
@@ -20,6 +23,10 @@ function destroyContainers()
     docker ps -a
 }
 
-source ./basic-features.sh
+source ./consul-standard.sh
 source ./consul-template.sh
-source ./vault.sh
+
+source ./vault-activate.sh
+source ./vault-backend-secrets.sh
+source ./vault-backend-security.sh
+source ./vault-http-api.sh
