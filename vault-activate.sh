@@ -1,11 +1,22 @@
 #!/bin/bash
 
 declare -A VAULT_ROOT_TOKENS
+declare -A VAULT_UNSEAL_KEY_SETS
 
-function _vaultRootToken()
+function _setVaultRootTokenAndUnsealKeySet()
 {
-    local vaultServerContainerName=$1
-    printf "$(_printLogs $vaultServerContainerName)" | grep 'Root Token' | awk '{ print $3}'
+    local hashmapKey=$1
+    local text=$2
+
+    VAULT_ROOT_TOKENS[$hashmapKey]=$(printf "$text" | grep 'Root Token' | awk '{ print $3}')
+    VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(printf "$text" | grep 'Unseal Key' | awk '{ print $3}')
+}
+
+function showVaultRootTokenAndUnsealKeySet()
+{
+    local hashmapKey=$1
+    printf "Root token: ${VAULT_ROOT_TOKENS[$hashmapKey]}\n\n"
+    printf "Unseal key set: ${VAULT_UNSEAL_KEY_SETS[$hashmapKey]}\n\n"
 }
 
 function startVaultServerDev()
@@ -16,7 +27,7 @@ function startVaultServerDev()
     docker run -p 8211:8200 --name $containerName -h $containerName -d sjourdan/vault
     sleep 2
     _printLogs $containerName
-    VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
+    _setVaultRootTokenAndUnsealKeySet $containerName $(_printLogs $containerName)
 }
 
 function startVaultServerStdFileStorageBackend()
@@ -29,7 +40,6 @@ function startVaultServerStdFileStorageBackend()
     docker run -v $configFolder:/config -p 8221:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/file.hcl
     sleep 2
     _printLogs $containerName
-    VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
 }
 
 function startVaultServerStdConsulStorageBackend()
@@ -43,7 +53,6 @@ function startVaultServerStdConsulStorageBackend()
     docker run --link $consulContainerName:consul -v $configFolder:/config -p 8231:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/consul.hcl
     sleep 2
     _printLogs $containerName
-    VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
 }
 
 #curl --fail http://<vault server>/v1/sys/health || exit 2
@@ -101,7 +110,9 @@ function initVaultFromCli()
 {
     printf "***** Initializing Vault\n"
 
-    _vaultClientNoToken init
+    local initOutput=$(_vaultClientNoToken init)
+    _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME $initOutput
+
 }
 
 function unsealVault()
