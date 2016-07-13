@@ -23,6 +23,23 @@ function destroyContainers()
     docker ps -a
 }
 
+function _interfaceIp()
+{
+    local interfaceName=$1
+    ifconfig $interfaceName | grep inet | head -n 1 | awk '{print $2}'
+}
+
+function _dockerBridgeIp()
+{
+    _interfaceIp docker0
+}
+
+function _usedInterfaceIp()
+{
+    local interfaceName=$(ifconfig -a | grep $(netstat -i | tail -n +3 | awk '{print $1}' | grep -vE 'docker0|lo|veth') | sed 's@:.*@@')
+    _interfaceIp $interfaceName
+}
+
 function _containerIp()
 {
     local containerName=$1

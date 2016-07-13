@@ -1,10 +1,5 @@
 #!/bin/bash
 
-function _dockerBridgeIp()
-{
-    ifconfig docker0 | grep inet | head -n 1 | awk '{print $2}'
-}
-
 function addConsulDnsDockerOpts()
 {
     printf "***** Adding Consul DNS DOCKER_OPTS if needed\n"
@@ -58,7 +53,9 @@ function startConsulBootstrapAgents()
 
     agent='be1srv1' && docker run -p 8411:8400 -p 8511:8500 -p 8611:8600/udp -p $(_dockerBridgeIp):53:8600/udp --name $agent -h $agent -d gliderlabs/consul-server -bootstrap-expect 3 -dc "backend" && _printContainerNameAndIp $agent
     agent='fe1srv1' && docker run -p 8421:8400 -p 8521:8500 -p 8621:8600/udp --name $agent -h $agent -d gliderlabs/consul-server -bootstrap-expect 3 -dc "frontend" && _printContainerNameAndIp $agent
-    printf "BE Web UI URL is http://hostIp:8511/ui and FE Web UI URL is http://hostIp:8521/ui\n"
+    
+    hostIp=$(_usedInterfaceIp)
+    printf "BE Web UI URL is http://$hostIp:8511/ui and FE Web UI URL is http://$hostIp:8521/ui\n"
 }
 
 function startConsulMonitor()
