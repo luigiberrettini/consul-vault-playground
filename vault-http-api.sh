@@ -9,7 +9,7 @@ function checkInitStatus()
     curl --silent "http://127.0.0.1:$port/v1/sys/init" | jq
 }
 
-function initVault()
+function initVaultFromApi()
 {
     printf "***** [HTTP-API] Initializing Vault server\n"
 

@@ -101,7 +101,7 @@ function _vaultClientCustomToken()
     _vaultClientCustomServerAndToken '' token $*
 }
 
-function initVault()
+function initVaultFromCli()
 {
     printf "***** Initializing Vault\n"
 
