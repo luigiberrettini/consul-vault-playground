@@ -36,11 +36,11 @@ function startVaultServerStdConsulStorageBackend()
 {
     printf "***** Starting a Vault Server in standard mode using Consul storage backend\n"
 
-    local containerName=$1
+    local consulContainerName=$1
     local configFolder=$2
     local containerName='vaultsc'
 
-    docker run --link $containerName:consul -v $configFolder:/config -p 8231:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/consul.hcl
+    docker run --link $consulContainerName:consul -v $configFolder:/config -p 8231:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/consul.hcl
     sleep 2
     _printLogs $containerName
     VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
