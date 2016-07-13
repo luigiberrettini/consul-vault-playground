@@ -8,8 +8,8 @@ function _setVaultRootTokenAndUnsealKeySet()
     local hashmapKey=$1
     local text=$2
 
-    VAULT_ROOT_TOKENS[$hashmapKey]=$(printf "$text" | grep 'Root Token' | awk '{ print $3}')
-    VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(printf "$text" | grep 'Unseal Key' | awk '{ print $3}')
+    VAULT_ROOT_TOKENS[$hashmapKey]=$(printf "$text" | grep 'Root Token' | awk '{ print $(NF), $NF }')
+    VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(printf "$text" | grep 'Unseal Key' | awk '{ print $(NF), $NF }')
 }
 
 function showVaultRootTokenAndUnsealKeySet()
