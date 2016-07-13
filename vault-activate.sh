@@ -13,8 +13,8 @@ function startVaultServerDev()
     printf "***** Starting a Vault Server in dev mode\n"
 
     local containerName='vaultdi'
-
     docker run -p 8211:8200 --name $containerName -h $containerName -d sjourdan/vault
+    sleep 2
     _printLogs $containerName
     VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
 }
@@ -27,6 +27,7 @@ function startVaultServerStdFileStorageBackend()
     local containerName='vaultsf'
 
     docker run -v $configFolder:/config -p 8221:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/file.hcl
+    sleep 2
     _printLogs $containerName
     VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
 }
@@ -40,6 +41,7 @@ function startVaultServerStdConsulStorageBackend()
     local containerName='vaultsc'
 
     docker run --link $containerName:consul -v $configFolder:/config -p 8231:8200 --name $containerName -h $containerName -d sjourdan/vault server -config=/config/consul.hcl
+    sleep 2
     _printLogs $containerName
     VAULT_ROOT_TOKENS[$containerName]=$(_vaultRootToken $containerName)
 }
