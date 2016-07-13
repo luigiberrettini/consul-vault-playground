@@ -110,7 +110,8 @@ function initVaultFromCli()
 {
     printf "***** Initializing Vault\n"
 
-    local initOutput=$(_vaultClientNoToken init)
+    local initOutput=$(_vaultClientNoToken init 2>&1)
+    printf "$initOutput"
     _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME "$initOutput"
 }
 
