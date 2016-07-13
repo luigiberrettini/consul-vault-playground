@@ -67,8 +67,11 @@ function _vaultClientCustomServerAndToken()
 
     local vaultAddr="http://$vaultIp:8200"
 
-    local vaultCommand="vault $*"
-    if [ "$tokenMode" == "token" ]; then
+    local vaultCommand=''
+    if [ "$tokenMode" == "notoken" ]; then
+        shift
+        vaultCommand="vault $*"
+    else
         if [ -z "$authToken" ]; then
             authToken=$AUTH_TOKEN
             if [ -z "$authToken" ]; then
