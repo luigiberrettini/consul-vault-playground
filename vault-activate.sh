@@ -54,31 +54,27 @@ function _vaultClientCustomServerAndToken()
     local tokenMode=$2
     local authToken=$3
 
+    shift
     if [ -z "$vaultServerContainerName" ]; then
         vaultServerContainerName=$VAULT_SERVER_CONTAINER_NAME
         if [ -z "$vaultServerContainerName" ]; then
             vaultServerContainerName='vaultdi'
         fi
-    else
-        shift
     fi
 
     local vaultIp="$(_containerIp $vaultServerContainerName)"
 
     local vaultAddr="http://$vaultIp:8200"
 
-    local vaultCommand=''
-    if [ "$tokenMode" == "notoken" ]; then
+    shift
+    local vaultCommand="vault $*"
+    if [ "$tokenMode" == "token" ]; then
         shift
-        vaultCommand="vault $*"
-    else
         if [ -z "$authToken" ]; then
             authToken=$AUTH_TOKEN
             if [ -z "$authToken" ]; then
                 authToken=${VAULT_ROOT_TOKENS[$vaultServerContainerName]}
             fi
-        else
-            shift
         fi
         vaultCommand="vault auth $authToken &>/dev/null; vault $*"
     fi
