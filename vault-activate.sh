@@ -27,7 +27,7 @@ function startVaultServerDev()
     docker run -p 8211:8200 --name $containerName -h $containerName -d sjourdan/vault
     sleep 2
     _printLogs $containerName
-    _setVaultRootTokenAndUnsealKeySet $containerName $(_printLogs $containerName)
+    _setVaultRootTokenAndUnsealKeySet $containerName "$(_printLogs $containerName)"
 }
 
 function startVaultServerStdFileStorageBackend()
@@ -111,8 +111,7 @@ function initVaultFromCli()
     printf "***** Initializing Vault\n"
 
     local initOutput=$(_vaultClientNoToken init)
-    _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME $initOutput
-
+    _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME "$initOutput"
 }
 
 function unsealVault()
