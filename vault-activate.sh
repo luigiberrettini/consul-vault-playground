@@ -79,7 +79,7 @@ function _vaultClientCustomServerAndToken()
         vaultCommand="vault auth $authToken &>/dev/null; vault $*"
     fi
     
-    docker run -it --rm -e "VAULT_ADDR=$vaultAddr" --entrypoint=/bin/sh sjourdan/vault -c $vaultCommand
+    docker run -it --rm -e "VAULT_ADDR=$vaultAddr" --entrypoint=/bin/sh sjourdan/vault -c "$vaultCommand"
 }
 
 function _vaultClientNoToken()
