@@ -15,8 +15,8 @@ function _setVaultRootTokenAndUnsealKeySet()
 function showVaultRootTokenAndUnsealKeySet()
 {
     local hashmapKey=$1
-    printf "Root token: ${VAULT_ROOT_TOKENS[$hashmapKey]}\n\n"
-    printf "Unseal key set: ${VAULT_UNSEAL_KEY_SETS[$hashmapKey]}\n\n"
+    printf "Root token\n${VAULT_ROOT_TOKENS[$hashmapKey]}\n\n"
+    printf "Unseal key set\n${VAULT_UNSEAL_KEY_SETS[$hashmapKey]}\n\n"
 }
 
 function startVaultServerDev()
