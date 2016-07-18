@@ -19,20 +19,26 @@ function _createTokenForTokenAuthBackend()
     local createTokenOutput=''
 
     if [ -z "$aclPolicyName" ]; then
-        createTokenOutput=$(_vaultClientDefaultToken token-create 2>&1)
+        _vaultClientDefaultToken token-create 2>&1
     else
-        createTokenOutput=$(_vaultClientDefaultToken token-create -policy=$aclPolicyName 2>&1)
+        _vaultClientDefaultToken token-create -policy=$aclPolicyName 2>&1
     fi
-    echo -e "$createTokenOutput\n"
-    
-    echo -e "$createTokenOutput\n" | tail -n +2 | head | awk '{ print $2 }'
+}
+
+function _extractTokenFromText()
+{
+    local text=$1
+    printf "$text" | grep 'token' | grep -v 'token_' | awk '{ print $2 }'
 }
 
 function tokenAuthBackendBasic()
 {
     printf "***** Basic token auth backend\n"
 
-    local newToken=$(_createTokenForTokenAuthBackend)
+    local createTokenOutput=$(_createTokenForTokenAuthBackend)
+    local newToken=$(_extractTokenFromText "$createTokenOutput")
+    printf "$createTokenOutput\n\n"
+    
     _vaultClientDefaultToken auth $newToken
     _vaultClientDefaultToken token-revoke $newToken
 }
@@ -41,8 +47,11 @@ function tokenAuthBackendWithPolicy()
 {
     printf "***** ACL policy token auth backend\n"
 
-    local newToken=$(_createTokenForTokenAuthBackend secret)
-    _vaultClientDefaultToken auth 
+    local createTokenOutput=$(_createTokenForTokenAuthBackend secret)
+    local newToken=$(_extractTokenFromText "$createTokenOutput")
+    printf "$createTokenOutput\n\n"
+
+    _vaultClientDefaultToken auth $newToken
     _vaultClientCustomToken $newToken write secret/hello1 value=newworld
     _vaultClientCustomToken $newToken write secret/hello2 value=updatedworld
     _vaultClientCustomToken $newToken mounts
