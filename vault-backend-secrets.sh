@@ -20,6 +20,7 @@ function deleteSecret()
 {
     printf "***** Writing secrets, deleting them and writing them again\n"
 
+    _vaultClientDefaultToken delete secret/hello3
     _vaultClientDefaultToken write secret/hello3 value=world3
     _vaultClientDefaultToken delete secret/hello3
     _vaultClientDefaultToken write secret/hello3 value=world3
