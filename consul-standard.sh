@@ -34,7 +34,7 @@ function pushItemsToRedis()
 
     docker run -it --link beredissrv2:redis --rm redis redis-cli -h redis -p 6379 lpush myBeList2 BeL2First > /dev/null && \
     printf "\nServer beredissrv2 - Key myBeList2 items:\n" && \
-    docker run -it --link beredissrv1:redis --rm redis redis-cli -h redis -p 6379 lrange myBeList2 0 -1
+    docker run -it --link beredissrv2:redis --rm redis redis-cli -h redis -p 6379 lrange myBeList2 0 -1
 
     docker run -it --link feredissrv1:redis --rm redis redis-cli -h redis -p 6379 lpush myFeList1 FeL1First > /dev/null && \
     printf "\nServer feredissrv1 - Key myFeList1 items:\n" && \
