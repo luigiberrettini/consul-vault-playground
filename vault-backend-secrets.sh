@@ -13,7 +13,7 @@ function writeSecretAndReadAsJson()
     printf "***** Writing secrets and reading as JSON\n"
 
     _vaultClientDefaultToken write secret/hello2 value=world excited=yes
-    _vaultClientDefaultToken read -format=json secret/hello2 | jq
+    printf "$(_vaultClientDefaultToken read -format=json secret/hello2)" | jq
 }
 
 function deleteSecret()
