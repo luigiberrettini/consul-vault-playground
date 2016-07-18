@@ -4,6 +4,7 @@ export DOCKER_HOST=tcp://0.0.0.0:2375
 export VAULT_SERVER_CONTAINER_NAME='vaultdi'
 #export VAULT_SERVER_CONTAINER_NAME='vaultsf'
 #export VAULT_SERVER_CONTAINER_NAME='vaultsc'
+export VAULT_CLIENT_WORK_DIR=$(pwd)/../vault-client-work-dir
 
 function destroyContainers()
 {

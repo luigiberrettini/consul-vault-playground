@@ -4,9 +4,13 @@ function defineAclPolicy()
 {
     printf "***** Defining an ACL policy\n"
 
-    printf "path \"secret/hello1\" { policy = \"write\" }\npath \"secret/hello2\" { policy = \"read\" }\n" > secretAclPolicy.hcl
-    printf "Policy:\n$(cat secretAclPolicy.hcl)"
-    _vaultClientDefaultToken policy-write secret secretAclPolicy.hcl && rm secretAclPolicy.hcl
+    local aclPolicyFileName=secretAclPolicy.hcl
+    local aclPolicyHostFilePath=$VAULT_CLIENT_WORK_DIR/$aclPolicyFileName
+    local aclPolicyContainerFilePath=/config/$aclPolicyFileName
+
+    printf "path \"secret/hello1\" { policy = \"write\" }\npath \"secret/hello2\" { policy = \"read\" }\n" > $aclPolicyHostFilePath
+    printf "Policy:\n$(cat $aclPolicyHostFilePath)\n"
+    _vaultClientDefaultToken policy-write secret $aclPolicyContainerFilePath && rm $aclPolicyHostFilePath
 }
 
 function _createTokenForTokenAuthBackend()
