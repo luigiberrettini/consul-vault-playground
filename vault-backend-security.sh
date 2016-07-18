@@ -19,9 +19,9 @@ function _createTokenForTokenAuthBackend()
     local createTokenOutput=''
 
     if [ -z "$aclPolicyName" ]; then
-        createTokenOutput=$(_vaultClientDefaultToken token-create -policy=$aclPolicyName 2>&1)
-    else
         createTokenOutput=$(_vaultClientDefaultToken token-create 2>&1)
+    else
+        createTokenOutput=$(_vaultClientDefaultToken token-create -policy=$aclPolicyName 2>&1)
     fi
     echo -e "$createTokenOutput\n"
     
