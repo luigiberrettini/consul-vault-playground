@@ -151,6 +151,7 @@ function _showAgentServicesAndChecks()
     
     printf "agent/services\n"
     curl --silent "http://localhost:$port/v1/agent/services" | jq
+
     printf "agent/checks\n"
     curl --silent "http://localhost:$port/v1/agent/checks" | jq
 }

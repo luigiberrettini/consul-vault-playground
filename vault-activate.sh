@@ -55,8 +55,6 @@ function startVaultServerStdConsulStorageBackend()
     _printLogs $containerName
 }
 
-#curl --fail http://<vault server>/v1/sys/health || exit 2
-
 function _vaultClientCustomServerAndToken()
 {
     local vaultServerContainerName=$1
@@ -111,7 +109,7 @@ function initVaultFromCli()
     printf "***** Initializing Vault\n"
 
     local initOutput=$(_vaultClientNoToken init 2>&1)
-    printf "$initOutput"
+    echo -e "$initOutput"
     _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME "$initOutput"
 }
 

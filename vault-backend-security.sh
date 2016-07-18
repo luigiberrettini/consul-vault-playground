@@ -19,9 +19,9 @@ function _createTokenForTokenAuthBackend()
     else
         createTokenOutput=$(_vaultClientDefaultToken token-create 2>&1)
     fi
-    printf "$createTokenOutput\n"
+    echo -e "$createTokenOutput\n"
     
-    printf "$createTokenOutput\n" | tail -n +2 | head | awk '{ print $2 }'
+    echo -e "$createTokenOutput\n" | tail -n +2 | head | awk '{ print $2 }'
 }
 
 function tokenAuthBackendBasic()
