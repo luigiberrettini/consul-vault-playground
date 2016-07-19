@@ -4,7 +4,7 @@ function checkInitStatus()
 {
     printf "***** [HTTP-API] Checking Vault server init status\n"
 
-    # 8220
+    # 8221
     local port=$1
     curl --silent "http://127.0.0.1:$port/v1/sys/init" | jq
 }
