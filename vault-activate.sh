@@ -7,10 +7,16 @@ function _setVaultRootTokenAndUnsealKeySet()
 {
     local hashmapKey=$1
     local text=$2
+    local jsonText=$3
 
     if [ "$(echo -e "$text" | grep -c 'Vault is already initialized')" -eq "0" ]; then
-        VAULT_ROOT_TOKENS[$hashmapKey]=$(echo -e "$text" | grep 'Root Token' | awk '{ print $NF }')
-        VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(echo -e "$text" | grep 'Unseal Key' | awk '{ print $NF }')
+        if [ -z "$jsonText" ]; then
+            VAULT_ROOT_TOKENS[$hashmapKey]=$(echo -e "$text" | grep 'Root Token' | awk '{ print $NF }')
+            VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(echo -e "$text" | grep 'Unseal Key' | awk '{ print $NF }')
+        else
+            VAULT_ROOT_TOKENS[$hashmapKey]=$(echo -e "$text" | jq '.root_token' | sed 's@\"@@g')
+            VAULT_UNSEAL_KEY_SETS[$hashmapKey]=$(echo -e "$text" | jq '.keys[]' | sed 's@\"@@g')
+        fi
     fi
 }
 
@@ -108,7 +114,7 @@ function _vaultClientCustomToken()
 
 function initVaultFromCli()
 {
-    printf "***** Initializing Vault\n"
+    printf "***** Initializing Vault server\n"
 
     local initOutput=$(_vaultClientNoToken init 2>&1)
     echo -e "$initOutput"
