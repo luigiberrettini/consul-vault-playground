@@ -14,7 +14,7 @@ function startVaultServerForApi()
 
 function checkInitStatus()
 {
-    printf "***** [HTTP-API] Checking Vault server init status\n"
+    printf "***** [HTTP API] Checking Vault server init status\n"
 
     # 8241
     local port=$1
@@ -23,10 +23,20 @@ function checkInitStatus()
 
 function initVaultFromApi()
 {
-    printf "***** [HTTP-API] Initializing Vault server\n"
+    printf "***** [HTTP API] Initializing Vault server\n"
 
     local port=$1
     local initOutput=$(curl --silent -X PUT --data '{"secret_shares": 5, "secret_threshold": 3}' "http://localhost:$port/v1/sys/init")
     echo -e "$initOutput" | jq
     _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME "$initOutput" 'jsonText'
+}
+
+function unsealVaultFromApi()
+{
+    printf "***** [HTTP API] Unsealing Vault server\n"
+
+    local key=$1
+    local port=$2
+
+    curl --silent -X PUT --data "{\"key\": \"$key\"}" "http://127.0.0.1:$port/v1/sys/unseal"
 }

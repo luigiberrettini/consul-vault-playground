@@ -121,9 +121,9 @@ function initVaultFromCli()
     _setVaultRootTokenAndUnsealKeySet $VAULT_SERVER_CONTAINER_NAME "$initOutput"
 }
 
-function unsealVault()
+function unsealVaultFromCli()
 {
-    printf "***** Unsealing Vault\n"
+    printf "***** Unsealing Vault server\n"
 
     local key=$1
     _vaultClientNoToken unseal $key
