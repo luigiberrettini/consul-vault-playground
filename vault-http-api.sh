@@ -14,5 +14,5 @@ function initVaultFromApi()
     printf "***** [HTTP-API] Initializing Vault server\n"
 
     local port=$1
-    curl --silent -X PUT --data '{"secret_shares": 1, "secret_threshold": 1}' 'http://localhost:$port/v1/sys/init' | jq
+    curl --silent -X PUT --data '{"secret_shares": 1, "secret_threshold": 1}' "http://localhost:$port/v1/sys/init" | jq
 }
