@@ -73,7 +73,7 @@ function configureGitHubAuthBackend()
     printf "Configured GitHub backend to only accept users from the CodersTUG organization\n"
 
     _vaultClientDefaultToken write auth/github/map/teams/default value=root
-    printf "Map any team to the of CodersTUG to the root policy\n"
+    printf "Map any team of CodersTUG to the root policy\n"
 }
 
 function authenticateToGitHubAuthBackend()
